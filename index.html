@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的记账本</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    background: #f2f4f8;
+}
+
+.container {
+    max-width: 500px;
+    margin: auto;
+}
+
+.card {
+    background: white;
+    border-radius: 20px;
+    padding: 22px;
+    margin-bottom: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+}
+
+h1 {
+    margin: 0 0 15px;
+    text-align: center;
+}
+
+.balance {
+    text-align: center;
+    font-size: 34px;
+    font-weight: bold;
+    margin: 15px 0;
+}
+
+input, select {
+    width: 100%;
+    padding: 14px;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    font-size: 16px;
+    background: white;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 12px;
+    background: #222;
+    color: white;
+    font-size: 17px;
+}
+
+.record {
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.income {
+    color: #16a34a;
+}
+
+.expense {
+    color: #dc2626;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+    <h1>💰 我的记账本</h1>
+
+    <div>当前余额</div>
+
+    <div class="balance" id="balance">
+        ¥0.00
+    </div>
+</div>
+
+<div class="card">
+
+    <select id="type">
+        <option value="income">收入</option>
+        <option value="expense">支出</option>
+    </select>
+
+    <input
+        id="amount"
+        type="number"
+        placeholder="请输入金额"
+    >
+
+    <input
+        id="note"
+        type="text"
+        placeholder="备注，例如：吃饭"
+    >
+
+    <button onclick="addRecord()">
+        添加记录
+    </button>
+
+</div>
+
+<div class="card">
+
+    <h2>📋 记账记录</h2>
+
+    <div id="records">
+        暂无记录
+    </div>
+
+</div>
+
+</div>
+
+<script>
+
+let balance = 0;
+let records = JSON.parse(localStorage.getItem("records")) || [];
+alert(JSON.stringify(records));
+
+records.forEach(function(item){
+    balance += item.type === "income" ? item.amount : -item.amount;
+});
+document.getElementById("balance").innerHTML =
+"¥" + balance.toFixed(2);
+records.forEach(function(item){
+
+    let div = document.createElement("div");
+
+    div.innerHTML =
+    item.type === "income"
+    ? "➕¥" + item.amount + " " + item.note
+    : "➖¥" + item.amount + " " + item.note;
+
+    document.getElementById("records").appendChild(div);
+
+});
+
+function addRecord() {
+
+    const type = document.getElementById("type").value;
+    const amount = Number(
+        document.getElementById("amount").value
+    );
+
+    const note =
+        document.getElementById("note").value || "未填写备注";
+
+    if (!amount || amount <= 0) {
+        alert("请输入正确的金额");
+        return;
+    }
+
+    if (type === "income") {
+        balance += amount;
+    } else {
+        balance -= amount;
+    }
+
+    document.getElementById("balance").innerText =
+        "¥" + balance.toFixed(2);
+
+    const records =
+        document.getElementById("records");
+
+    if (records.innerText === "暂无记录") {
+        records.innerHTML = "";
+    }
+
+    const item =
+        document.createElement("div");
+
+    item.className = "record";
+
+    if (type === "income") {
+
+        item.innerHTML =
+            '<span class="income">＋¥' +
+            amount.toFixed(2) +
+            '</span>　' +
+            note;
+
+    } else {
+
+        item.innerHTML =
+            '<span class="expense">－¥' +
+            amount.toFixed(2) +
+            '</span>　' +
+            note;
+    }
+
+    records.prepend(item);
+localStorage.setItem("records", JSON.stringify(records));
+alert("已经保存");
+item.addEventListener("click", function () {
+  if (confirm("确定要删除这条记录吗？")) {
+    item.remove();
+  }
+});
+
+    document.getElementById("amount").value = "";
+    document.getElementById("note").value = "";
+}
+
+</script>
+
+</body>
+</html>
